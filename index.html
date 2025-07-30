@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NMAP Helper</title>
+    <title>NMAP HELPER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutral Harmony -->
-    <!-- Application Structure Plan: The application is structured with three main tabs: "Nmap Command Center", "Example Exploit Walkthrough", and "About". This organization prioritizes the practical tool (Nmap) first, followed by the educational walkthrough, and concludes with author information. This flow is logical for users who may want to quickly access the command reference. The Nmap tab features an interactive command builder for immediate use, followed by a comprehensive, well-structured cheat sheet for in-depth research. The tabbed design maintains a clean single-page application feel while separating distinct functional areas. -->
-    <!-- Visualization & Content Choices: The procedural vsFTPd exploit is visualized using interactive simulated terminals (HTML/CSS) in its dedicated tab, ensuring no static graphics (NO SVG/Mermaid) are used. The Nmap command builder uses dynamic HTML generation from a JSON object for interactivity. The comprehensive Nmap cheat sheet, provided by the user, is now fully integrated using semantic HTML (headings, lists, code blocks) for maximum readability and accessibility, replacing the previous summary. The "About" section uses a simple, clean card layout. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -99,6 +95,21 @@
             border-radius: 4px;
             color: #374151;
         }
+        .prose {
+            max-width: none;
+        }
+        .prose h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -116,15 +127,18 @@
     <main class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
 
         <div class="mb-8 border-b border-gray-200">
-            <nav class="flex space-x-4" aria-label="Tabs">
-                <button id="tab-nmap-btn" class="tab-btn active whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+            <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
+                <button id="tab-nmap-btn" class="tab-btn active whitespace-nowrap mr-4 pb-4 px-1 border-b-2 font-medium text-sm">
                     Nmap Command Center
                 </button>
-                <button id="tab-walkthrough-btn" class="tab-btn whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                    Exploit Walkthrough
+                <button id="tab-cheatsheet-btn" class="tab-btn whitespace-nowrap mr-4 pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    Cheat Sheet
+                </button>
+                <button id="tab-walkthrough-btn" class="tab-btn whitespace-nowrap mr-4 pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    Example Exploit Walkthrough
                 </button>
                  <button id="tab-about-btn" class="tab-btn whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                    About
+                    About ME
                 </button>
             </nav>
         </div>
@@ -134,7 +148,7 @@
             <div class="text-center mb-12">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Nmap Command Center</h1>
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Use the interactive builder to generate common commands, or browse the full cheat sheet for advanced options.
+                    Use the interactive builder to generate common commands based on your target.
                 </p>
             </div>
 
@@ -147,17 +161,20 @@
                     <div id="commands-container"></div>
                 </div>
             </section>
+        </div>
 
-            <section id="nmap-cheatsheet">
+        <!-- TAB 2: Cheat Sheet -->
+        <div id="tab-cheatsheet-content" class="tab-content">
+             <section id="nmap-cheatsheet">
                  <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 cheatsheet-section">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Nmap Cheat Sheet</h2>
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center">Nmap Cheat Sheet</h1>
                     
-                    <div class="prose max-w-none prose-indigo">
-                        <p class="lead text-lg text-gray-600">This cheat sheet is crafted to assist both beginners and seasoned professionals in identifying vulnerabilities using Nmap. It covers fundamental knowledge for those new to penetration testing, while also providing advanced options to help experienced users refine their skills.</p>
+                    <div class="prose">
+                        <p class="lead text-lg text-gray-600 mt-4 text-center">This cheat sheet is crafted to assist beginners in identifying vulnerabilities using Nmap. It covers fundamental knowledge for those new to penetration testing, while also providing advanced options to help experienced users refine their skills.</p>
                         
-                        <h3 class="text-2xl font-semibold mt-8 mb-4">NMAP</h3>
+                        <h3 class="text-2xl font-semibold mt-10 mb-4 border-b pb-2">NMAP</h3>
 
-                        <div class="space-y-6">
+                        <div class="space-y-8">
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Misc</h4>
                                 <ul class="list-disc list-inside space-y-2">
@@ -184,7 +201,7 @@
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Host Discovery</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-sL</code>: List Scan - simply list targets to scan</li>
                                     <li><code>-sn</code>: Ping Scan - disable port scan</li>
                                     <li><code>-Pn</code>: Treat all hosts as online - skip host discovery</li>
@@ -200,7 +217,7 @@
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Scan Techniques</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-sS/sT/sA/sW/sM</code>: TCP SYN/Connect()/ACK/Window/Maimon scans</li>
                                     <li><code>-sU</code>: UDP Scan</li>
                                     <li><code>-sN/sF/sX</code>: TCP Null, Fin, and Xmas scans</li>
@@ -214,7 +231,7 @@
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Port Specification & Scan Order</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-p &lt;port ranges&gt;</code>: Only scan specified ports</li>
                                     <li><code>--exclude-ports &lt;port ranges&gt;</code>: Exclude the specified ports from scanning</li>
                                     <li><code>-F</code>: Fast mode - Scan fewer ports than the default scan</li>
@@ -226,7 +243,7 @@
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Service/Version Detection</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-sV</code>: Probe open ports to determine service/version info</li>
                                     <li><code>--version-intensity &lt;level&gt;</code>: Set from 0 (light) to 9 (try all probes)</li>
                                     <li><code>--version-light</code>: Limit to most likely probes (intensity 2)</li>
@@ -237,7 +254,7 @@
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Script Scan</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-sC</code>: equivalent to --script=default</li>
                                     <li><code>--script &lt;Lua scripts&gt;</code>: Lua scripts is a comma-separated list of directories, script files, or script categories.</li>
                                     <li><code>--script-args=&lt;n1=v1,...&gt;</code>: Provide arguments to scripts</li>
@@ -250,7 +267,7 @@
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Timing & Performance</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-T&lt;0-5&gt;</code>: Set timing template (higher is faster)</li>
                                     <li><code>--min-hostgroup/max-hostgroup &lt;size&gt;</code>: Parallel host scan group sizes</li>
                                     <li><code>--min-parallelism/max-parallelism &lt;numprobes&gt;</code>: Probe parallelization</li>
@@ -265,20 +282,27 @@
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Firewall/IDS Evasion & Spoofing</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-f</code>: Fragment packets (optionally w/given MTU)</li>
+                                    <li><code>--mtu &lt;val&gt;</code>: Fragment packets (optionally w/given MTU)</li>
                                     <li><code>-D &lt;decoy1,decoy2[,ME],...&gt;</code>: Cloak a scan with decoys</li>
                                     <li><code>-S &lt;IP address&gt;</code>: Spoof source address</li>
                                     <li><code>-e &lt;iface&gt;</code>: Use specified interface</li>
                                     <li><code>-g/--source-port &lt;portnum&gt;</code>: Use given port number</li>
+                                    <li><code>--proxies &lt;url1,...&gt;</code>: Relay connections through HTTP/SOCKS4 proxies</li>
+                                    <li><code>--data &lt;string&gt;</code>: Append a custom payload to sent packets</li>
+                                    <li><code>--data-string &lt;string&gt;</code>: Append a custom ASCII string to sent packets</li>
                                     <li><code>--data-length &lt;num&gt;</code>: Append random data to sent packets</li>
+                                    <li><code>--ip-options &lt;options&gt;</code>: Send packets with specified IP options</li>
+                                    <li><code>--ttl &lt;val&gt;</code>: Set IP time-to-live field</li>
                                     <li><code>--spoof-mac &lt;mac address/prefix/vendor name&gt;</code>: Spoof your MAC address</li>
+                                    <li><code>--badsum</code>: Send packets with a bogus TCP/UDP/SCTP checksum</li>
                                 </ul>
                             </div>
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">Output</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-oN/-oX/-oS/-oG &lt;file&gt;</code>: Output scan in normal, XML, s|ript kidd|3, and Grepable format.</li>
                                     <li><code>-oA &lt;basename&gt;</code>: Output in the three major formats at once</li>
                                     <li><code>-v</code>: Increase verbosity level (use -vv or more for greater effect)</li>
@@ -286,13 +310,19 @@
                                     <li><code>--reason</code>: Display the reason a port is in a particular state</li>
                                     <li><code>--open</code>: Only show open (or possibly open) ports</li>
                                     <li><code>--packet-trace</code>: Show all packets sent and received</li>
+                                    <li><code>--iflist</code>: Print host interfaces and routes (for debugging)</li>
                                     <li><code>--append-output</code>: Append to rather than clobber specified output files</li>
+                                    <li><code>--resume &lt;filename&gt;</code>: Resume an aborted scan</li>
+                                    <li><code>--noninteractive</code>: Disable runtime interactions via keyboard</li>
+                                    <li><code>--stylesheet &lt;path/URL&gt;</code>: XSL stylesheet to transform XML output to HTML</li>
+                                    <li><code>--webxml</code>: Reference stylesheet from Nmap.Org for more portable XML</li>
+                                    <li><code>--no-stylesheet</code>: Prevent association of XSL stylesheet w/XML output</li>
                                 </ul>
                             </div>
 
                             <div>
                                 <h4 class="text-xl font-semibold mb-3">OS Detection</h4>
-                                <ul class="list-disc list-inside space-y-2">
+                                <ul>
                                     <li><code>-O</code>: Enable OS detection</li>
                                     <li><code>--osscan-limit</code>: Limit OS detection to promising targets</li>
                                     <li><code>--osscan-guess</code>: Guess OS more aggressively</li>
@@ -301,14 +331,35 @@
                         </div>
 
                         <div class="mt-8 border-t pt-6">
-                            <p>This guide is designed to be useful to everyone in the field of cybersecurity.</p>
+                            <h3 class="text-2xl font-semibold mt-8 mb-4">Refer the link's below</h3>
+                            <p>Resources are from Hacking Articles, this guide is designed to be useful to everyone in the field of cybersecurity.</p>
+                            <ul class="list-decimal list-inside space-y-2">
+                                <li><a href="https://www.hackingarticles.in/nmap-for-pentester-host-discovery/" target="_blank" class="text-amber-600 hover:underline">Host Discovery</a></li>
+                                <li><a href="https://www.hackingarticles.in/nmap-for-pentester-output-format-scan/" target="_blank" class="text-amber-600 hover:underline">Output Format Scan</a></li>
+                                <li><a href="https://www.hackingarticles.in/understanding-nmap-packet-trace/" target="_blank" class="text-amber-600 hover:underline">Understanding Nmap Packet Trace</a></li>
+                                <li><a href="https://www.hackingarticles.in/nmap-scan-with-timing-parameters/" target="_blank" class="text-amber-600 hover:underline">Nmap Scan with Timing Parameters</a></li>
+                                <li><a href="https://www.hackingarticles.in/nmap-scans-using-hex-value-flags/" target="_blank" class="text-amber-600 hover:underline">Nmap Scans using Hex Value of Flags</a></li>
+                                <li><a href="https://www.hackingarticles.in/forensic-investigation-of-nmap-scan-using-wireshark/" target="_blank" class="text-amber-600 hover:underline">Forensic Investigation of Nmap Scan using Wireshark</a></li>
+                                <li><a href="https://www.hackingarticles.in/understanding-guide-nmap-timing-scan-firewall-bypass/" target="_blank" class="text-amber-600 hover:underline">Understanding Guide for Nmap Timing Scan (Firewall Bypass)</a></li>
+                                <li><a href="https://www.hackingarticles.in/understanding-guide-nmap-ping-scan-firewall-bypass/" target="_blank" class="text-amber-600 hover:underline">Understanding Guide for Nmap Ping Scan (Firewall Bypass)</a></li>
+                                <li><a href="https://www.hackingarticles.in/comprehensive-guide-nmap-port-status/" target="_blank" class="text-amber-600 hover:underline">Comprehensive Guide on Nmap Port Status</a></li>
+                                <li><a href="https://www.hackingarticles.in/detect-nmap-scan-using-snort/" target="_blank" class="text-amber-600 hover:underline">How to Detect NMAP Scan Using Snort</a></li>
+                                <li><a href="https://www.hackingarticles.in/understanding-guide-nmap-firewall-scan-part-2/" target="_blank" class="text-amber-600 hover:underline">Understanding Guide to Nmap Firewall Scan (Part 2)</a></li>
+                                <li><a href="https://www.hackingarticles.in/understanding-guide-nmap-firewall-scan-part-1/" target="_blank" class="text-amber-600 hover:underline">Understanding Guide to Nmap Firewall Scan (Part 1)</a></li>
+                                <li><a href="https://www.hackingarticles.in/understanding-nmap-scan-wireshark/" target="_blank" class="text-amber-600 hover:underline">Understanding Nmap Scan with Wireshark</a></li>
+                                <li><a href="https://www.hackingarticles.in/nmap-for-pentester-password-cracking/" target="_blank" class="text-amber-600 hover:underline">Password Cracking using Nmap</a></li>
+                                <li><a href="https://www.hackingarticles.in/nmap-for-pentester-vulnerability-scan/" target="_blank" class="text-amber-600 hover:underline">Vulnerability Scan</a></li>
+                                <li><a href="https://www.hackingarticles.in/network-scanning-using-nmap-beginner-guide/" target="_blank" class="text-amber-600 hover:underline">Network Scanning using NMAP (Beginner Guide)</a></li>
+                                <li><a href="https://www.hackingarticles.in/mssql-for-pentesternmap/" target="_blank" class="text-amber-600 hover:underline">MSSQL Penetration Testing using Nmap</a></li>
+                                <li><a href="https://www.hackingarticles.in/mysql-penetration-testing-nmap/" target="_blank" class="text-amber-600 hover:underline">MySQL Penetration Testing with Nmap</a></li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </section>
         </div>
         
-        <!-- TAB 2: Exploit Walkthrough -->
+        <!-- TAB 3: Exploit Walkthrough -->
         <div id="tab-walkthrough-content" class="tab-content">
             <div class="text-center mb-16">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Anatomy of a Hack</h1>
@@ -432,7 +483,7 @@
             </section>
         </div>
 
-        <!-- TAB 3: About -->
+        <!-- TAB 4: About -->
         <div id="tab-about-content" class="tab-content">
             <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
                 <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">About the Author</h1>
@@ -445,7 +496,7 @@
                              <p>This interactive tool was created to provide a hands-on learning experience for cybersecurity concepts. Feel free to connect!</p>
                          </div>
                          <div class="mt-6 flex space-x-4">
-                             <a href="https://kuppamjohari.io" target="_blank" class="text-gray-500 hover:text-gray-800">
+                             <a href="https://kuppamjohari.github.io/" target="_blank" class="text-gray-500 hover:text-gray-800">
                                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
                              </a>
                              <a href="https://www.linkedin.com/in/kuppamjohari/" target="_blank" class="text-gray-500 hover:text-gray-800">
@@ -489,15 +540,18 @@
 
             // --- TAB HANDLING ---
             const tabNmapBtn = document.getElementById('tab-nmap-btn');
+            const tabCheatSheetBtn = document.getElementById('tab-cheatsheet-btn');
             const tabWalkthroughBtn = document.getElementById('tab-walkthrough-btn');
             const tabAboutBtn = document.getElementById('tab-about-btn');
             
             const tabNmapContent = document.getElementById('tab-nmap-content');
+            const tabCheatSheetContent = document.getElementById('tab-cheatsheet-content');
             const tabWalkthroughContent = document.getElementById('tab-walkthrough-content');
             const tabAboutContent = document.getElementById('tab-about-content');
 
             const tabs = [
                 { btn: tabNmapBtn, content: tabNmapContent },
+                { btn: tabCheatSheetBtn, content: tabCheatSheetContent },
                 { btn: tabWalkthroughBtn, content: tabWalkthroughContent },
                 { btn: tabAboutBtn, content: tabAboutContent }
             ];

